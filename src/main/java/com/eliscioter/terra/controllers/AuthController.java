@@ -1,20 +1,20 @@
 package com.eliscioter.terra.controllers;
 
-import com.eliscioter.terra.model.entity.UserEntity;
-import com.eliscioter.terra.model.wrapper.ResponseWrapper;
+import com.eliscioter.terra.interfaces.IAuth;
+import com.eliscioter.terra.model.dto.UserDTO;
+import com.eliscioter.terra.model.wrapper.UserResponse;
 import com.eliscioter.terra.repositories.UserRepository;
-import jakarta.ws.rs.Produces;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/login")
-public class AuthController {
+public class AuthController implements IAuth {
 
     UserRepository userRepository;
 
@@ -22,14 +22,19 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Produces(MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseWrapper<List<UserEntity>>> getUsers() {
-            List<UserEntity> fetchedUsers = userRepository.findAll();
+    @Override
+    public ResponseEntity<UserResponse> getUsers() {
+        List<UserDTO> fetchedUsers = userRepository
+                .findAll()
+                .stream()
+                .map(UserDTO::fromUser).collect(Collectors.toList());
 
-            if (fetchedUsers.isEmpty()) {
-                return ResponseEntity.ok(new ResponseWrapper<>(false, null, "No Users Found"));
-            }
-            return ResponseEntity.ok(new ResponseWrapper<>(true, fetchedUsers, "Success"));
+        if (fetchedUsers.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new UserResponse("No Users found"));
+        }
+
+        return ResponseEntity.ok(new UserResponse(fetchedUsers));
     }
 }
