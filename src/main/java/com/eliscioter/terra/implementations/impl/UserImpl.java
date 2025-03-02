@@ -6,8 +6,10 @@ import com.eliscioter.terra.models.entity.UserEntity;
 import com.eliscioter.terra.models.requests.CreateUserRequest;
 import com.eliscioter.terra.models.wrapper.ResponseData;
 import com.eliscioter.terra.repositories.UserRepository;
+import com.eliscioter.terra.commons.utils.Util;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +55,7 @@ public class UserImpl implements UserService {
         UserEntity user = new UserEntity();
         user.setEmail(createUserRequest.email());
         user.setUsername(createUserRequest.username());
-        user.setPassword(createUserRequest.password());
+        user.setPassword(Util.hashPassword(createUserRequest.password()));
 
         UserEntity createdUser = userRepository.save(user);
 
@@ -73,7 +75,7 @@ public class UserImpl implements UserService {
         }
 
         user.setPassword(updateUserRequest.password());
-        user.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.now()));
+        user.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         UserEntity updatedUser = userRepository.save(user);
 
