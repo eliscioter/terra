@@ -1,7 +1,7 @@
 package com.eliscioter.terra.controllers;
 
 import com.eliscioter.terra.implementations.services.UserService;
-import com.eliscioter.terra.interfaces.IUserService;
+import com.eliscioter.terra.controllers.interfaces.IUserService;
 import com.eliscioter.terra.models.requests.CreateUserRequest;
 import com.eliscioter.terra.models.wrapper.ResponseData;
 import org.springframework.http.HttpStatus;
