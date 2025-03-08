@@ -1,6 +1,7 @@
 package com.eliscioter.terra.controllers.interfaces;
 
 import com.eliscioter.terra.models.requests.CreateUserRequest;
+import com.eliscioter.terra.models.requests.UpdateUserRequest;
 import com.eliscioter.terra.models.wrapper.ResponseData;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +29,8 @@ public interface IUserService {
     ResponseEntity<ResponseData> createUser(@Valid @RequestBody CreateUserRequest createUserRequest);
 
     @PatchMapping(value = "/update/{id}", consumes = "application/json", produces = "application/json")
-    ResponseEntity<ResponseData> updateUser(@PathVariable("id") UUID id, @RequestBody CreateUserRequest updateUserRequest);
+    ResponseEntity<ResponseData> updateUser(@PathVariable("id") UUID id, @Valid @RequestBody UpdateUserRequest updateUserRequest);
 
     @DeleteMapping(value = "/delete/{id}")
-    ResponseEntity<ResponseData> deleteUser(@PathVariable UUID id, @RequestBody CreateUserRequest deleteUserRequest);
+    ResponseEntity<ResponseData> deleteUser(@PathVariable UUID id, @Valid @RequestBody CreateUserRequest deleteUserRequest);
 }

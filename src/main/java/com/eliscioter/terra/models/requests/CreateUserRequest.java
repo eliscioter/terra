@@ -5,10 +5,13 @@ import com.eliscioter.terra.commons.constants.ValidPasswordEnum;
 import com.eliscioter.terra.commons.validations.ValidIdentifier;
 import com.eliscioter.terra.commons.validations.ValidPassword;
 
-public record CreateUserRequest(
-        @ValidIdentifier(type = ValidIdentifierEnum.USERNAME) String username,
-        @ValidIdentifier(type = ValidIdentifierEnum.EMAIL) String email,
-        @ValidPassword(type = ValidPasswordEnum.REGISTER) String password) {
+public class CreateUserRequest {
+    @ValidIdentifier(type = ValidIdentifierEnum.USERNAME)
+    String username;
+    @ValidIdentifier(type = ValidIdentifierEnum.EMAIL)
+    String email;
+    @ValidPassword(type = ValidPasswordEnum.REGISTER)
+    String password;
 
     public CreateUserRequest(String username, String email, String password) {
         this.username = username;
@@ -16,18 +19,15 @@ public record CreateUserRequest(
         this.password = password;
     }
 
-    @Override
-    public String username() {
+    public String getUsername() {
         return username;
     }
 
-    @Override
-    public String email() {
+    public String getEmail() {
         return email;
     }
 
-    @Override
-    public String password() {
+    public String getPassword() {
         return password;
     }
 }
