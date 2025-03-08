@@ -4,9 +4,13 @@ import com.eliscioter.terra.implementations.services.UserService;
 import com.eliscioter.terra.models.dto.UserDTO;
 import com.eliscioter.terra.models.entity.UserEntity;
 import com.eliscioter.terra.models.requests.CreateUserRequest;
+import com.eliscioter.terra.models.requests.UpdateUserRequest;
 import com.eliscioter.terra.models.wrapper.ResponseData;
 import com.eliscioter.terra.repositories.UserRepository;
 import com.eliscioter.terra.commons.utils.Util;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -25,90 +29,135 @@ public class UserImpl implements UserService {
     }
 
     @Override
-    public ResponseData fetchedUsers() {
+    public ResponseEntity<ResponseData> fetchedUsers() {
         List<UserDTO> userDTOList = userRepository
                 .findAll()
                 .stream()
                 .map(UserDTO::fromUser).collect(Collectors.toList());
 
         if (userDTOList.isEmpty()) {
-            return new ResponseData().add("message", "No users found");
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .body( new ResponseData().add("message", "No users found"));
         }
-        return new ResponseData()
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body( new ResponseData()
                 .add("users", userDTOList)
-                .add("Total users", userDTOList.size());
+                .add("Total users", userDTOList.size()));
     }
 
     @Override
-    public ResponseData fetchedUser(UUID id) {
+    public ResponseEntity<ResponseData> fetchedUser(UUID id) {
         Optional<UserDTO> user = getUser(id) != null
                 ? Optional.of(UserDTO.fromUser(getUser(id)))
                 : Optional.empty();
 
         return user
-                .map(u -> new ResponseData().add("user", user))
-                .orElseGet(() -> new ResponseData().add("message", "User does not exist"));
+                .map(u -> ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseData().add("user", user)))
+                .orElseGet(() -> ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body(new ResponseData().add("message", "User does not exist")));
     }
 
     @Override
-    public ResponseData createdUser(CreateUserRequest createUserRequest) {
+    public ResponseEntity<ResponseData> createdUser(CreateUserRequest createUserRequest) {
         UserEntity user = new UserEntity();
-        user.setEmail(createUserRequest.email());
-        user.setUsername(createUserRequest.username());
-        user.setPassword(Util.hashPassword(createUserRequest.password()));
+        user.setEmail(createUserRequest.getEmail());
+        user.setUsername(createUserRequest.getUsername());
+        user.setPassword(Util.hashPassword(createUserRequest.getPassword()));
 
-        UserEntity createdUser = userRepository.save(user);
-
-        return new ResponseData().add("user", UserDTO.fromUser(createdUser));
+        try {
+            UserEntity createdUser = userRepository.save(user);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(new ResponseData().add("user", UserDTO.fromUser(createdUser)));
+        } catch (DataIntegrityViolationException e) {
+            String errorMessage = e.getMessage().toLowerCase();
+            if (errorMessage.contains("duplicate key") || errorMessage.contains("unique constraint")) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseData().add("message", "Username or Email address already exists."));
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(new ResponseData().add("message", "Data integrity violation: " + e.getMessage()));
+            }
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseData().add("message", "An error occurred: " + e.getMessage()));
+        }
     }
 
     @Override
-    public ResponseData updateUser(UUID id, CreateUserRequest updateUserRequest) {
+    public ResponseEntity<ResponseData> updateUser(UUID id, UpdateUserRequest updateUserRequest) {
         UserEntity user = getUser(id);
 
         if (user == null) {
-            return new ResponseData().add("message", "User does not exist");
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .body(new ResponseData().add("message", "User does not exist"));
         }
 
-        if (!updateUserRequest.email().equals(user.getEmail()) && !updateUserRequest.username().equals(user.getUsername())) {
-            return new ResponseData().add("message", "Invalid credentials");
+        if (!Util.verifyPassword(user.getPassword(), updateUserRequest.getOldPassword())
+                || isUsernameEmailNotVerified(updateUserRequest, user)) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseData().add("message", "Invalid credentials"));
         }
 
-        user.setPassword(updateUserRequest.password());
+        user.setPassword(Util.hashPassword(updateUserRequest.getPassword()));
         user.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         UserEntity updatedUser = userRepository.save(user);
 
-        return new ResponseData()
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(new ResponseData()
                 .add("user", UserDTO.fromUser(updatedUser))
-                .add("message", "User updated successfully");
+                .add("message", "User updated successfully"));
     }
 
     @Override
-    public ResponseData deleteUser(UUID id, CreateUserRequest deleteUserRequest) {
-        if (deleteUserRequest.email() == null
-                || deleteUserRequest.username() == null
-                || deleteUserRequest.password() == null) {
-            return new ResponseData().add("message", "Invalid credentials");
+    public ResponseEntity<ResponseData> deleteUser(UUID id, CreateUserRequest deleteUserRequest) {
+        if (deleteUserRequest.getEmail() == null
+                || deleteUserRequest.getUsername() == null
+                || deleteUserRequest.getPassword() == null) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseData().add("message", "Invalid credentials"));
         }
         UserEntity user = getUser(id);
 
         if (user == null) {
-            return new ResponseData().add("message", "User does not exist");
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseData().add("message", "User does not exist"));
         }
 
-        if (!deleteUserRequest.password().equals(user.getPassword())
-                || !deleteUserRequest.username().equals(user.getUsername())
-                || !deleteUserRequest.email().equals(user.getEmail())) {
-            return new ResponseData().add("message", "Invalid credentials");
+        if (!Util.verifyPassword(user.getPassword(), deleteUserRequest.getPassword())
+                || isUsernameEmailNotVerified(deleteUserRequest, user)) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseData().add("message", "Invalid credentials"));
         }
 
         userRepository.delete(user);
 
-        return new ResponseData().add("message", String.format("User %s deleted successfully", user.getUsername()));
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(new ResponseData()
+                        .add("message", String.format("User %s deleted successfully", user.getUsername())));
     }
 
     private UserEntity getUser(UUID id) {
         return userRepository.findById(id).orElse(null);
+    }
+
+    private boolean isUsernameEmailNotVerified(CreateUserRequest userRequest, UserEntity user) {
+        return !userRequest.getEmail().equals(user.getEmail()) || !userRequest.getUsername().equals(user.getUsername());
     }
 }
