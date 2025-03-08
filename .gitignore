@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Env ###
+env.properties
+
+### Google ###
+/src/main/resources/google/springbootfcm.json
