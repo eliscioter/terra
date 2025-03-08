@@ -12,5 +12,5 @@ public interface UserService {
     ResponseEntity<ResponseData> fetchedUser(UUID id);
     ResponseEntity<ResponseData> createdUser(CreateUserRequest createUserRequest);
     ResponseEntity<ResponseData> updateUser(UUID id, UpdateUserRequest updateUserRequest);
-    ResponseEntity<ResponseData> deleteUser(UUID id, CreateUserRequest deleteUserRequest);
+    ResponseEntity<ResponseData> deleteUser(UUID id);
 }

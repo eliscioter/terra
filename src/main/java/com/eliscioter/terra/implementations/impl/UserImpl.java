@@ -122,27 +122,13 @@ public class UserImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<ResponseData> deleteUser(UUID id, CreateUserRequest deleteUserRequest) {
-        if (deleteUserRequest.getEmail() == null
-                || deleteUserRequest.getUsername() == null
-                || deleteUserRequest.getPassword() == null) {
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(new ResponseData().add("message", "Invalid credentials"));
-        }
+    public ResponseEntity<ResponseData> deleteUser(UUID id) {
         UserEntity user = getUser(id);
 
         if (user == null) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseData().add("message", "User does not exist"));
-        }
-
-        if (!Util.verifyPassword(user.getPassword(), deleteUserRequest.getPassword())
-                || isUsernameEmailNotVerified(deleteUserRequest, user)) {
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(new ResponseData().add("message", "Invalid credentials"));
         }
 
         userRepository.delete(user);

@@ -40,7 +40,7 @@ public class UserController implements IUserService {
     }
 
     @Override
-    public ResponseEntity<ResponseData> deleteUser(UUID id, CreateUserRequest deleteUserRequest) {
-        return userService.deleteUser(id, deleteUserRequest);
+    public ResponseEntity<ResponseData> deleteUser(UUID id) {
+        return userService.deleteUser(id);
     }
 }
