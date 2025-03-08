@@ -3,8 +3,8 @@ package com.eliscioter.terra.controllers;
 import com.eliscioter.terra.implementations.services.UserService;
 import com.eliscioter.terra.controllers.interfaces.IUserService;
 import com.eliscioter.terra.models.requests.CreateUserRequest;
+import com.eliscioter.terra.models.requests.UpdateUserRequest;
 import com.eliscioter.terra.models.wrapper.ResponseData;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,27 +21,26 @@ public class UserController implements IUserService {
 
     @Override
     public ResponseEntity<ResponseData> getUsers() {
-        return ResponseEntity.ok(userService.fetchedUsers());
+        return userService.fetchedUsers();
     }
 
     @Override
     public ResponseEntity<ResponseData> getUser(UUID id) {
-        return ResponseEntity.ok(userService.fetchedUser(id));
+        return userService.fetchedUser(id);
     }
 
     @Override
     public ResponseEntity<ResponseData> createUser(CreateUserRequest createUserRequest) {
-        ResponseData responseData = userService.createdUser(createUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseData);
+        return userService.createdUser(createUserRequest);
     }
 
     @Override
-    public ResponseEntity<ResponseData> updateUser(UUID id, CreateUserRequest updateUserRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.updateUser(id, updateUserRequest));
+    public ResponseEntity<ResponseData> updateUser(UUID id, UpdateUserRequest updateUserRequest) {
+        return userService.updateUser(id, updateUserRequest);
     }
 
     @Override
     public ResponseEntity<ResponseData> deleteUser(UUID id, CreateUserRequest deleteUserRequest) {
-        return ResponseEntity.ok(userService.deleteUser(id, deleteUserRequest));
+        return userService.deleteUser(id, deleteUserRequest);
     }
 }

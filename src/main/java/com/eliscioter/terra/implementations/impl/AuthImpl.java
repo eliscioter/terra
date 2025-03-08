@@ -7,6 +7,8 @@ import com.eliscioter.terra.models.requests.LoginRequest;
 import com.eliscioter.terra.models.wrapper.ResponseData;
 import com.eliscioter.terra.repositories.UserRepository;
 import com.eliscioter.terra.commons.utils.Util;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,23 +23,29 @@ public class AuthImpl implements AuthService {
     }
 
     @Override
-    public ResponseData auth(LoginRequest loginRequest) {
+    public ResponseEntity<ResponseData> auth(LoginRequest loginRequest) {
         return isVerifiedUser(loginRequest);
     }
 
-    private ResponseData isVerifiedUser(LoginRequest loginRequest) {
+    private ResponseEntity<ResponseData> isVerifiedUser(LoginRequest loginRequest) {
         Optional<UserEntity> user = userRepository
                 .findByUsername(loginRequest.identifier())
                 .or(() -> userRepository.findByEmail(loginRequest.identifier()));
 
         if (user.isEmpty()) {
-            return new ResponseData().add("message", "Invalid Credentials");
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body( new ResponseData().add("message", "Invalid Credentials"));
         }
 
         if (!isUserPassword(user.get().getPassword(), loginRequest.password())) {
-            return new ResponseData().add("message", "Invalid Credentials");
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body( new ResponseData().add("message", "Invalid Credentials"));
         }
-        return new ResponseData().add("user", UserDTO.fromUser(user.get()));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body( new ResponseData().add("user", UserDTO.fromUser(user.get())));
     }
 
     private boolean isUserPassword(String savedPassword, String password) {

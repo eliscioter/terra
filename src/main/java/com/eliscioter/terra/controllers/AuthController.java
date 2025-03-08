@@ -17,6 +17,6 @@ public class AuthController implements IAuthService {
 
     @Override
     public ResponseEntity<ResponseData> login(LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.auth(loginRequest));
+        return authService.auth(loginRequest);
     }
 }
