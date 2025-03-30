@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.checkerframework.common.aliasing.qual.Unique;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -19,9 +18,11 @@ public class RegisteredDeviceEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    @Unique
+    @Column(unique = true, nullable = false)
     private String deviceToken;
+
+    @Column(unique = true, nullable = false)
+    private String correlationToken;
 
     @Column(nullable = false)
     private Date createdAt;
@@ -38,11 +39,19 @@ public class RegisteredDeviceEntity {
         this.id = id;
     }
 
-    public @Unique String getDeviceToken() {
+    public String getDeviceToken() {
         return deviceToken;
     }
 
-    public void setDeviceToken(@Unique String deviceToken) {
+    public void setDeviceToken(String deviceToken) {
         this.deviceToken = deviceToken;
+    }
+
+    public String getCorrelationToken() {
+        return correlationToken;
+    }
+
+    public void setCorrelationToken(String correlationToken) {
+        this.correlationToken = correlationToken;
     }
 }
