@@ -1,6 +1,7 @@
 package com.eliscioter.terra.implementations.impl;
 
 import com.eliscioter.terra.implementations.services.PushNotificationService;
+import com.eliscioter.terra.models.requests.CorrelationTokenRequest;
 import com.eliscioter.terra.models.requests.RegisterDeviceTokenRequest;
 import com.eliscioter.terra.models.entity.RegisteredDeviceEntity;
 import com.eliscioter.terra.models.requests.NotificationRequest;
@@ -11,21 +12,37 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
+import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class PushNotificationImpl implements PushNotificationService {
 
     FirebaseMessaging firebaseMessaging;
     private RegisteredDevice registeredDevice;
+    private final RestTemplate restTemplate;
 
-    public PushNotificationImpl(FirebaseMessaging firebaseMessaging, RegisteredDevice registeredDevice) {
+    @Value("${django.server.url}")
+    private String djangoUrl;
+
+    public PushNotificationImpl(FirebaseMessaging firebaseMessaging, RegisteredDevice registeredDevice,
+                                RestTemplate restTemplate) {
         this.firebaseMessaging = firebaseMessaging;
         this.registeredDevice = registeredDevice;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -59,10 +76,29 @@ public class PushNotificationImpl implements PushNotificationService {
     @Override
     public ResponseEntity<ResponseData> registerToken(RegisterDeviceTokenRequest registerDeviceTokenRequest) {
         RegisteredDeviceEntity token = new RegisteredDeviceEntity();
-        token.setDeviceToken(registerDeviceTokenRequest.getToken());
+        token.setDeviceToken(registerDeviceTokenRequest.getFcmToken());
+        token.setCorrelationToken(registerDeviceTokenRequest.getCorrelationToken());
         registeredDevice.save(token);
+
+        sendCorrelationTokenToApi(token.getCorrelationToken());
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new ResponseData().add("message", "Device token is registered successfully!"));
+    }
+
+    private void sendCorrelationTokenToApi(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, String> request = new HashMap<>();
+        request.put("token", token);
+
+        Gson gson = new Gson();
+        String jsonPayload = gson.toJson(request);
+
+        HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
+
+        restTemplate.exchange(djangoUrl, HttpMethod.POST, entity, String.class);
     }
 }
