@@ -19,8 +19,8 @@ public class PushNotificationController implements IPushNotificationService {
     }
 
     @Override
-    public ResponseEntity<ResponseData> sendPushNotification(NotificationRequest notificationRequest) {
-        return null;
+    public ResponseEntity<ResponseData> sendPushNotification(NotificationRequest notificationRequest) throws FirebaseMessagingException {
+        return pushNotificationService.send(notificationRequest);
     }
 
     @Override

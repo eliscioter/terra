@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public interface IPushNotificationService {
 
     @PostMapping("/send")
-    ResponseEntity<ResponseData> sendPushNotification(@RequestBody NotificationRequest notificationRequest);
+    ResponseEntity<ResponseData> sendPushNotification(@RequestBody NotificationRequest notificationRequest) throws FirebaseMessagingException;
 
     @PostMapping("/send-to-all")
     ResponseEntity<ResponseData> sendToAllPushNotification(@RequestBody NotificationRequest notificationRequest) throws FirebaseMessagingException;
