@@ -12,5 +12,6 @@ public interface RegisteredDevice extends JpaRepository<RegisteredDeviceEntity, 
 
     @Query("SELECT r.deviceToken FROM RegisteredDeviceEntity r")
     Collection<String> findAllDeviceToken();
+    RegisteredDeviceEntity findByCorrelationToken(String id);
 
 }
