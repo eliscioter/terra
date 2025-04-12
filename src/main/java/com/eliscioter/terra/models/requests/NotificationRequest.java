@@ -3,6 +3,7 @@ package com.eliscioter.terra.models.requests;
 public class NotificationRequest {
 
     private String topic;
+    private String correlationId;
     private String title;
     private String body;
 
@@ -10,6 +11,9 @@ public class NotificationRequest {
         return topic;
     }
 
+    public String getCorrelationId() {
+        return correlationId;
+    }
     public String getTitle() {
         return title;
     }
