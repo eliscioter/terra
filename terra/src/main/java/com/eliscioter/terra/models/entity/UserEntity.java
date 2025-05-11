@@ -3,6 +3,7 @@ package com.eliscioter.terra.models.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
@@ -32,6 +33,9 @@ public final class UserEntity {
     private Date createdAt;
 
     private Date updatedAt;
+
+    @OneToOne(mappedBy = "user")
+    private RefreshToken refreshToken;
 
     public UserEntity() {
         this.createdAt = java.sql.Timestamp.valueOf(LocalDateTime.now());
@@ -67,5 +71,13 @@ public final class UserEntity {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public RefreshToken getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(RefreshToken refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

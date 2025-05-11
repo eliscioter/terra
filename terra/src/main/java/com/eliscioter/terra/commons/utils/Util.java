@@ -2,6 +2,7 @@ package com.eliscioter.terra.commons.utils;
 
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class Util {
     public static String hashPassword(String password) {

@@ -8,9 +8,11 @@ import com.eliscioter.terra.models.requests.UpdateUserRequest;
 import com.eliscioter.terra.models.wrapper.ResponseData;
 import com.eliscioter.terra.repositories.UserRepository;
 import com.eliscioter.terra.commons.utils.Util;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -22,11 +24,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserImpl implements UserService {
+
+    @Autowired
     UserRepository userRepository;
 
-    public UserImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Override
     public ResponseEntity<ResponseData> fetchedUsers() {
@@ -67,7 +70,7 @@ public class UserImpl implements UserService {
         UserEntity user = new UserEntity();
         user.setEmail(createUserRequest.getEmail());
         user.setUsername(createUserRequest.getUsername());
-        user.setPassword(Util.hashPassword(createUserRequest.getPassword()));
+        user.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
 
         try {
             UserEntity createdUser = userRepository.save(user);
