@@ -42,6 +42,15 @@ public class JWTUtils {
 
     }
 
+    public String generateAccessTokenFromUsername(String username) {
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date((new Date()).getTime() + jwtAccessExpirationMs))
+                .signWith(key())
+                .compact();
+    }
+
     private SecretKey key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }

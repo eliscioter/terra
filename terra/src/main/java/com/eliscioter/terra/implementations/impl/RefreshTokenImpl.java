@@ -1,5 +1,6 @@
 package com.eliscioter.terra.implementations.impl;
 
+import com.eliscioter.terra.implementations.services.RefreshTokenService;
 import com.eliscioter.terra.models.entity.RefreshToken;
 import com.eliscioter.terra.repositories.RefreshTokenRepository;
 import com.eliscioter.terra.repositories.UserRepository;
@@ -12,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class RefreshTokenService {
+public class RefreshTokenImpl implements RefreshTokenService {
 
     @Value("${jwt.refresh.access.expirationMs}")
     private Long refreshTokenDurationMs;
@@ -23,10 +24,12 @@ public class RefreshTokenService {
     @Autowired
     private UserRepository userRepository;
 
+    @Override
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
     }
 
+    @Override
     public RefreshToken createRefreshToken(UUID userId) {
         RefreshToken refreshToken = new RefreshToken();
 
@@ -38,11 +41,17 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
+    @Override
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
             throw new RuntimeException("Refresh token was expired");
         }
         return token;
+    }
+
+    @Override
+    public void deleteByUserId(UUID userId) {
+        refreshTokenRepository.deleteByUserId(userId);
     }
 }

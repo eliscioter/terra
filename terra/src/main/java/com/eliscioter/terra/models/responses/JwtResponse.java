@@ -7,13 +7,12 @@ import java.util.UUID;
 public class JwtResponse {
 
     private String accessToken;
-    private RefreshToken refreshToken;
-    private final String tokenType = "Bearer";
+    private String refreshToken;
     private UUID id;
     private String username;
     private String email;
 
-    public JwtResponse(String accessToken, RefreshToken refreshToken, UUID id, String username, String email) {
+    public JwtResponse(String accessToken, String refreshToken, UUID id, String username, String email) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.id = id;
@@ -29,15 +28,16 @@ public class JwtResponse {
         this.accessToken = accessToken;
     }
 
-    public RefreshToken getRefreshToken() {
+    public String getRefreshToken() {
         return refreshToken;
     }
 
-    public void setRefreshToken(RefreshToken refreshToken) {
+    public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
 
     public String getTokenType() {
+        String tokenType = "Bearer";
         return tokenType;
     }
 

@@ -34,7 +34,7 @@ public class AuthImpl implements AuthService {
     UserRepository userRepository;
 
     @Autowired
-    RefreshTokenService refreshTokenService;
+    RefreshTokenImpl refreshTokenService;
 
     @Override
     public ResponseEntity<ResponseData> auth(LoginRequest loginRequest) {
@@ -49,7 +49,7 @@ public class AuthImpl implements AuthService {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseData().add("user", new JwtResponse(
                 accessToken,
-                refreshToken,
+                refreshToken.getToken(),
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail()

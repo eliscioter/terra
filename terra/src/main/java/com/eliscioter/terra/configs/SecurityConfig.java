@@ -62,7 +62,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unAuthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy((SessionCreationPolicy.STATELESS)))
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/refresh", "/user/create").permitAll()
+                        .requestMatchers("/auth/login", "/auth/refresh", "/user/create").permitAll()
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
